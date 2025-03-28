@@ -1,0 +1,19 @@
+# Repository Map
+
+[contactes]
+url = nexus.srv.bonarea.com:11199/dg/intradmin/contactes-federation
+url_list = https://nexus.srv.bonarea.com:11199/v2/dg/intradmin/contactes-federation/tags/list
+build_dir = /mnt/c/Users/ramon.trepat/projects/bonarea/react/contactes/app-module-contactes
+nexus_url = http://nexus.srv.bonarea.com:8081/#browse/browse:docker-bonarea:v2%2Fdg%2Fintradmin%2Fcontactes-federation%2Ftags
+ktl = lan-devel
+kns = itdg-adm-contactes-devel
+name = contactes-module-deployment
+
+[portal]
+url = nexus.srv.bonarea.com:11199/dg/intradmin/extranet-portal
+url_list = https://nexus.srv.bonarea.com:11199/v2/dg/intradmin/extranet-portal/tags/list
+build_dir = /mnt/c/Users/ramon.trepat/projects/bonarea/react/portal/ui-core
+nexus_url=http://nexus.srv.bonarea.com:8081/#browse/browse:docker-bonarea:v2%2Fdg%2Fintradmin%2Fextranet-portal%2Ftags
+ktl = gray-devel
+kns = itdg-adm-contactes-devel
+name = portal-deployment
