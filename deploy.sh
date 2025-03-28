@@ -14,12 +14,14 @@ trap 'echo -e "${NL}${RED}Procés parat!${NC}"; exit' SIGINT ERR
 source ./publish/repo_map.sh
 source ./.bash_aliases
 
-# Funció per comprovar si ja estàs loguejat a KTL
+# Funció per comprovar si estàs loguejat al servidor correcte
 is_logged_in_ktl() {
-    if ktl get namespaces &> /dev/null; then
-        echo -e "${NL}${GREEN}Ja estàs loguejat a Kubernetes.${NC}"
+    local current_context=$(kubectl config current-context)
+    if [[ "$current_context" == "$KTL" ]]; then
+        echo -e "${NL}${GREEN}Estàs loguejat al servidor correcte: ${RED}$current_context${NC}"
         return 0
     else
+        echo -e "${NL}${RED}No estàs loguejat al servidor correcte! Context actual: ${RED}$current_context${NC}"
         return 1
     fi
 }
