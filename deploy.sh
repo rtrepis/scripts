@@ -11,13 +11,13 @@ NL='\n' # Salts de línia
 trap 'echo -e "${NL}${RED}Procés parat!${NC}"; exit' SIGINT ERR
 
 # Incloure les funcions des d'altres arxius
-source ./publish/repo_map.sh
-source ./.bash_aliases
+source ~/publish/repo_map.sh
+source ~/.bash_aliases
 
 # Funció per comprovar si estàs loguejat al servidor correcte
 is_logged_in_ktl() {
     local current_context=$(kubectl config current-context)
-    if [[ "$current_context" == "$KTL" ]]; then
+    if [[ "$current_context" == "tkc-$KTL-01" ]]; then
         echo -e "${NL}${GREEN}Estàs loguejat al servidor correcte: ${RED}$current_context${NC}"
         return 0
     else
@@ -64,7 +64,12 @@ update_deployment() {
 echo -e "${NL}${GREEN}Iniciant el desplegament...${NC}"
 
 # Seleccionar el repositori
-select_repo
+if [ -n "$1" ]; then
+    REPO_NAME="$1"
+    select_repo "$REPO_NAME"
+else
+    select_repo
+fi
 
 # Fer login a KTL
 login_ktl

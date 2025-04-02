@@ -11,9 +11,9 @@ NL='\n' # Salts de línia
 trap 'echo -e "${NL}${RED}Procés parat!${NC}"; exit' SIGINT ERR
 
 # Incloure les funcions des d'altres arxius
-source ./publish/get_package_version.sh
-source ./publish/repo_map.sh
-source ./publish/build.sh
+source ~/publish/get_package_version.sh
+source ~/publish/repo_map.sh
+source ~/publish/build.sh
 
 select_repo  # Crida a select_repo() per seleccionar el repositori
 
@@ -81,3 +81,17 @@ if [ $? -ne 0 ]; then
 fi
 
 echo -e "${NL}${GREEN}Imatge pujada correctament. Publicació completada amb la versió ${RED}$VERSION${GREEN}!${NC}"
+
+# Preguntar si es vol fer el desplegament
+read -p "Vols fer el desplegament? (s/n): " DEPLOY
+if [ "$DEPLOY" == "s" ]; then
+    echo -e "${NL}${GREEN}Iniciant el desplegament:${RED} $REPO_NAME ${NC}"
+    bash ~/publish/deploy.sh "$REPO_NAME"
+    if [ $? -ne 0 ]; then
+        echo -e "${NL}${RED}Error en el desplegament!${NC}"
+        exit 1
+    fi
+    echo -e "${NL}${GREEN}Desplegament completat correctament!${NC}"
+else
+    echo -e "${NL}${GREEN}Desplegament cancel·lat.${NC}"
+fi
