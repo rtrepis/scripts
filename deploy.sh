@@ -15,26 +15,52 @@ source ~/publish/repo_map.sh
 source ~/.bash_aliases
 
 # Funció per comprovar si estàs loguejat al servidor correcte
+
 is_logged_in_ktl() {
-    local current_context=$(kubectl config current-context)
-    if [[ "$current_context" == "tkc-$KTL-01" ]]; then
-        echo -e "${NL}${GREEN}Estàs loguejat al servidor correcte: ${RED}$current_context${NC}"
-        return 0
-    else
-        echo -e "${NL}${RED}No estàs loguejat al servidor correcte! Context actual: ${RED}$current_context${NC}"
-        return 1
-    fi
+  local expected="tkc-${KTL}-01"
+  local current
+  current=$(kubectl config current-context 2>/dev/null)
+
+  if [[ "$current" != "$expected" ]]; then
+    echo "❌ Context incorrecte: $current (esperat: $expected)"
+    return 1
+  fi
+
+  # Comprova si el token és vàlid fent una crida lleugera
+  if kubectl --request-timeout=5s get --raw='/readyz' >/dev/null 2>&1; then
+    echo "✅ Context correcte i token vàlid ($current)"
+    return 0
+  else
+    echo "⚠️ Context correcte però token expirat o sense accés"
+    return 2
+  fi
 }
 
-# Funció per fer login a KTL
+
+
+# Funció per fer login a KTL (versió simple)
 login_ktl() {
     if is_logged_in_ktl; then
         echo -e "${NL}${GREEN}No cal fer login a Kubernetes.${NC}"
+        return 0
     else
         echo -e "${NL}${GREEN}Fent login a Kubernetes: ${RED}${KTL}${NC}"
-        ktl $KTL || { echo -e "${NL}${RED}Error en el login a Kubernetes!${NC}"; exit 1; }
+        if ktl "$KTL"; then
+            # Torna a comprovar després del login
+            if is_logged_in_ktl; then
+                echo -e "${NL}${GREEN}Login correcte a Kubernetes.${NC}"
+                return 0
+            else
+                echo -e "${NL}${RED}Després del login no s'ha validat l'accés (context/token).${NC}"
+                return 1
+            fi
+        else
+            echo -e "${NL}${RED}Error en el login a Kubernetes!${NC}"
+            return 1
+        fi
     fi
 }
+
 
 # Funció per fer login a KNS
 login_kns() {
@@ -46,7 +72,7 @@ login_kns() {
 get_latest_images() {
     local num_images=5
     local response=$(curl -s "${REPO_LIST}") || { echo -e "${NL}${RED}Error en obtenir les versions del Nexus!${NC}"; exit 1; }
-    echo $response | jq -r '.tags[]' | sort -r | head -n $num_images || { echo -e "${NL}${RED}Error en processar les versions del Nexus!${NC}"; exit 1; }
+    echo $response | jq -r '.tags[]' | sort -Vr | head -n $num_images || { echo -e "${NL}${RED}Error en processar les versions del Nexus!${NC}"; exit 1; }
 }
 
 # Funció per obtenir la imatge actual del deployment

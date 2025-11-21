@@ -12,11 +12,13 @@ trap 'echo -e "${NL}${RED}Procés parat!${NC}"; exit' SIGINT ERR
 # Incloure funcions
 source ~/publish/get_package_version.sh
 source ~/publish/repo_map.sh
-source ~/publish/build.sh
+#source ~/publish/build.sh
 source ~/publish/tag_manager.sh
+
 
 # Seleccionar repositori (amb suport per argument)
 select_repo "$1"
+
 
 # Verificar que $BUILD_DIR està definit
 if [ -z "$BUILD_DIR" ]; then
@@ -31,17 +33,25 @@ if [ ! -f "$BUILD_DIR/package.json" ]; then
 fi
 
 # Obtenir la versió
-VERSION=$(get_version "$BUILD_DIR")
+
+if [ -n "$DOKER_FILE" ]; then
+    VERSION=$(get_version "$BUILD_DIR/$(dirname "$DOKER_FILE")")
+else
+    VERSION=$(get_version "$BUILD_DIR")
+fi
+
 if [ $? -ne 0 ]; then
     echo -e "${NL}${RED}Error obtenint la versió!${NC}"
     exit 1
 fi
 echo -e "${NL}${GREEN}Versió obtinguda: ${RED}$VERSION${NC}"
 
-# Comprovar si la imatge ja existeix
-EXISTING_IMAGE=$(docker images "$REPO:$VERSION" -q)
-if [ -n "$EXISTING_IMAGE" ]; then
-    echo -e "${NL}${RED}La versió $VERSION ja existeix al registre Docker.${NC}"
+# Obtenir la llista de tags del registre
+TAGS=$(curl -s "$REPO_LIST" | jq -r '.tags[]')
+
+# Comprovar si la versió hi és
+if echo "$TAGS" | grep -q "^$VERSION$"; then
+    echo -e "${NL}${RED}La versió $VERSION ja existeix al registre Nexus.${NC}"
     read -p "Vols sobreescriure-la? (s/n): " OVERWRITE
     if [ "$OVERWRITE" != "s" ]; then
         echo -e "${NL}${RED}Publicació cancel·lada.${NC}"
@@ -49,9 +59,11 @@ if [ -n "$EXISTING_IMAGE" ]; then
     fi
 fi
 
+
 # Construcció del projecte
 echo -e "${NL}${GREEN}Iniciant la construcció del projecte...${NC}"
-build_project "$BUILD_DIR"
+#build_project "$BUILD_DIR"
+ cd $BUILD_DIR
 if [ $? -ne 0 ]; then
     echo -e "${NL}${RED}Error en la construcció del projecte!${NC}"
     exit 1
@@ -59,11 +71,17 @@ fi
 
 # Construcció de la imatge Docker
 echo -e "${NL}${GREEN}Construint la imatge Docker amb la versió ${RED}$VERSION${GREEN}...${NC}"
-docker build --platform linux/amd64 -t "$REPO:$VERSION" .
+
+if [ -n "$DOKER_FILE" ]; then
+    docker build --platform linux/amd64 -f "$DOKER_FILE" -t "$REPO:$VERSION" .
+else
+    docker build --platform linux/amd64 -t "$REPO:$VERSION" .
+fi
 if [ $? -ne 0 ]; then
     echo -e "${NL}${RED}Error construint la imatge Docker!${NC}"
     exit 1
 fi
+
 
 # Confirmació abans de publicar
 NEXUS_URL="${NEXUS_URL}%2F${VERSION}"
@@ -105,4 +123,18 @@ if [ "$TAG" == "s" ]; then
     manage_tag "$BUILD_DIR" "$VERSION"
 else
     echo -e "${NL}${GREEN}Publicació de l'etiqueta cancel·lada.${NC}"
+fi
+
+# Actualització repository deploy
+read -p "Vols actualitzar el repositori deploy? (s/n): " DEPLOY
+if [ "$DEPLOY" == "s" ]; then
+    echo -e "${NL}${GREEN}Iniciant actualització: ${RED}$REPO_NAME${NC}"
+    bash ~/publish/deploy_repo_change.sh "$REPO_NAME" "$VERSION"
+    if [ $? -ne 0 ]; then
+        echo -e "${NL}${RED}Error en el desplegament!${NC}"
+        exit 1
+    fi
+    echo -e "${NL}${GREEN}Actualització completat correctament!${NC}"
+else
+    echo -e "${NL}${GREEN}ACtualització cancel·lada.${NC}"
 fi

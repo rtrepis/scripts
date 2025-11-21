@@ -23,21 +23,26 @@ echo -e "${GREEN}Consultant la darrera versió publicada al Nexus...${NC}"
 LATEST_VERSION=$(curl -s "$REPO_LIST" | jq -r '.tags[]' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
 
 if [ -n "$LATEST_VERSION" ]; then
-    echo -e "${GREEN}Última versió publicada: $LATEST_VERSION${NC}"
+    echo -e "${GREEN}Última versió publicada: ${RED}$LATEST_VERSION${NC}${NL}"
 else
     echo -e "${RED}No s'ha pogut obtenir la darrera versió del Nexus.${NC}"
 fi
 
-# Demanar la nova versió
-read -p "Introdueix la nova versió (ex: 1.2.3): " VERSION
-if [ -z "$VERSION" ]; then
-    echo -e "${RED}Versió no vàlida!${NC}"
-    exit 1
-fi
-
 # Crear branca release
 cd "$BUILD_DIR"
-git checkout -b "release/$VERSION"
+
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$CURRENT_BRANCH" =~ ^release/([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+    VERSION="${BASH_REMATCH[1]}"
+    echo -e "${GREEN}Ja estàs a la branca ${RED}$CURRENT_BRANCH.${NL}${GREEN}S'utilitzarà la versió $VERSION.${NC}${NL}"
+else
+    read -p "Introdueix la nova versió (ex: 1.2.3): " VERSION
+    if [ -z "$VERSION" ]; then
+        echo -e "${RED}Versió no vàlida!${NC}${NL}"
+        exit 1
+    fi
+    git checkout -b "release/$VERSION"
+fi
 
 # Actualitzar versió a package.json
 jq --arg v "$VERSION" '.version = $v' package.json > tmp.$$.json && mv tmp.$$.json package.json
@@ -46,7 +51,7 @@ jq --arg v "$VERSION" '.version = $v' package.json > tmp.$$.json && mv tmp.$$.js
 actualitza_versio_deployment() {
     local file="$1"
     if [ -f "$file" ]; then
-        echo -e "${GREEN}Actualitzant versió a $file...${NC}"
+        echo -e "${GREEN}Actualitzant versió a $file...${NC}${NL}"
         sed -i -E "s|(image: .*/contactes-federation:)[0-9]+\.[0-9]+\.[0-9]+|\1$VERSION|" "$file"
         git add "$file"
     else
@@ -55,47 +60,44 @@ actualitza_versio_deployment() {
 }
 
 # Fitxers devel i prod RELATIUS al BUILD_DIR
-actualitza_versio_deployment "./_deploy/tanzu/devel/deployment.yml"
-actualitza_versio_deployment "./_deploy/tanzu/prod/deployment.yml"
+for env in devel prod; do
+    for ext in yaml yml; do
+        actualitza_versio_deployment "./_deploy/tanzu/$env/deployment.$ext"
+    done
+done
 
-# Commit dels canvis
+# Afegir package.json
 git add package.json
-git commit -m "Update version $VERSION"
 
-# Cridar publish.sh amb el repositori ja seleccionat
-echo -e "${GREEN}Executant publicació...${NC}"
+# Comprovar si hi ha canvis abans de fer commit
+if git diff --cached --quiet; then
+    echo -e "${RED}No hi ha canvis per commitejar.${NC}${NL}"
+else
+    git commit -m "Update version $VERSION"
+fi
 
-# Preguntar si es vol publicar abans d'executar publish.sh
+# Preguntar si es vol publicar
 read -p "Vols publicar ara? (s/n): " PUBLICAR
 if [ "$PUBLICAR" != "s" ]; then
     echo -e "${GREEN}Publicació cancel·lada per l'usuari.${NC}"
     exit 0
 fi
 
-# Cridar publish.sh amb el repositori ja seleccionat
 echo -e "${GREEN}Executant publicació...${NC}"
 bash ~/publish/publish.sh "$REPO_NAME"
-
-
-# Cridar publish.sh amb el repositori ja seleccionat
-echo -e "${GREEN}Executant publicació...${NC}"
-bash ~/publish/publish.sh "$REPO_NAME"
-
 
 # Preguntar si es vol fer merge a develop
 read -p "Vols fer merge a develop? (s/n): " MERGE
 if [ "$MERGE" == "s" ]; then
     git checkout develop
-    git merge "release/$VERSION"
+    git merge --no--ff "release/$VERSION" -m "Merge release/$VERSION into current branch"
     echo -e "${GREEN}Merge completat a develop.${NC}"
 
-    # Preguntar si es vol fer push a origin/develop
     read -p "Vols fer push a origin/develop? (s/n): " PUSH_DEVELOP
     if [ "$PUSH_DEVELOP" == "s" ]; then
         git push origin develop
         echo -e "${GREEN}Push a origin/develop completat.${NC}"
     else
-        # Si no es vol fer push a develop, preguntar si es vol fer push a release
         read -p "Vols fer push a origin/release/$VERSION? (s/n): " PUSH_RELEASE
         if [ "$PUSH_RELEASE" == "s" ]; then
             git push origin "release/$VERSION"

@@ -3,11 +3,23 @@
 [contactes]
 url = nexus.srv.bonarea.com:11199/dg/intradmin/contactes-federation
 url_list = https://nexus.srv.bonarea.com:11199/v2/dg/intradmin/contactes-federation/tags/list
-build_dir = /mnt/c/Users/ramon.trepat/projects/bonarea/react/contactes/app-module-contactes
+build_dir = /mnt/c/Users/ramon.trepat/projects/bonarea/react/contactes/ui-monorepo
+doker_file= apps/module/Dockerfile
 nexus_url = http://nexus.srv.bonarea.com:8081/#browse/browse:docker-bonarea:v2%2Fdg%2Fintradmin%2Fcontactes-federation%2Ftags
 ktl = lan-devel
 kns = itdg-adm-contactes-devel
 name = contactes-module-deployment
+deploy_dir = /undefined
+
+[mestres]
+url = nexus.srv.bonarea.com:11199/dg/intradmin/mestres-federation
+url_list = https://nexus.srv.bonarea.com:11199/v2/dg/intradmin/mestres-federation/tags/list
+build_dir = /mnt/c/Users/ramon.trepat/projects/bonarea/react/mestres/app-module-mestres
+nexus_url = http://nexus.srv.bonarea.com:8081/#browse/browse:docker-bonarea:v2%2Fdg%2Fintradmin%2Fmestres-federation%2Ftags
+ktl = lan-devel
+kns = itdg-adm-contactes-devel
+name = contactes-module-deployment
+deploy_dir = /undefined
 
 [portal]
 url = nexus.srv.bonarea.com:11199/dg/intradmin/extranet-portal
@@ -17,3 +29,25 @@ nexus_url=http://nexus.srv.bonarea.com:8081/#browse/browse:docker-bonarea:v2%2Fd
 ktl = gray-devel
 kns = itdg-adm-contactes-devel
 name = portal-deployment
+deploy_dir = /undefined
+
+[traduccions]
+url = nexus.srv.bonarea.com:11199/dg/intraitdg/traduccions-federation
+url_list = https://nexus.srv.bonarea.com:11199/v2/dg/intraitdg/traduccions-federation/tags/list
+build_dir = /mnt/c/Users/ramon.trepat/projects/itdg/itdg-soft/traduccions/ui-module
+nexus_url=http://nexus.srv.bonarea.com:8081/#browse/browse:docker-bonarea:v2%2Fdg%2Fintraitdg-federation%2Ftraduccions%2Ftags
+ktl = lan-devel
+kns = itdg-traduccions-devel
+name = traduccions-module-deployment
+deploy_dir = /mnt/c/Users/ramon.trepat/projects/itdg/itdg-soft/traduccions/deploy/ui-module/devel
+
+[itdg-core]
+url = nexus.srv.bonarea.com:11199/dg/intradmin/app-intraitdg
+url_list = https://nexus.srv.bonarea.com:11199/v2/dg/intradmin/app-intraitdg/tags/list
+build_dir = /mnt/c/Users/ramon.trepat/projects/itdg/itdg-soft/intra-itdg/ui-core
+nexus_url=http://nexus.srv.bonarea.com:8081/#browse/browse:docker-bonarea:v2%2Fdg%2Fintradmin%2Fapp-intraitdg%2Ftags
+ktl = lan-devel
+kns = itdg-intra-devel
+name = intra-deployment
+deploy_dir = /undefind
+

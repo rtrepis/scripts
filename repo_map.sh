@@ -7,6 +7,11 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 NL='\n'
+BOLD='\033[1m'
+BG_BLUE_WHITE='\033[44;97m'   # Fons blau, text blanc
+RESET='\033[0m'
+
+source ~/publish/print_banner.sh
 
 read_repo_map() {
     local FILE_PATH="$HOME/publish/repo_map.txt"
@@ -54,11 +59,13 @@ select_repo() {
             case $key in
                 url) REPO=$value ;;
                 build_dir) BUILD_DIR=$value ;;
+                doker_file) DOKER_FILE=$value ;;
                 nexus_url) NEXUS_URL=$value ;;
                 ktl) KTL=$value ;;
                 kns) KNS=$value ;;
                 url_list) REPO_LIST=$value ;;
                 name) DEPLOY_NAME=$value ;;
+                deploy_dir) DEPLOY_DIR=$value ;;
             esac
         done
     else
@@ -70,4 +77,6 @@ select_repo() {
         echo -e "${RED}Error: BUILD_DIR no està definit!${NC}"
         exit 1
     fi
+
+    print_banner_title "$REPO_NAME"
 }
