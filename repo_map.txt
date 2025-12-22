@@ -51,3 +51,15 @@ kns = itdg-intra-devel
 name = intra-deployment
 deploy_dir = /undefind
 
+[intraAdminV3-core]
+url = nexus.srv.bonarea.com:11199/dg/intradmin/app-intradmin-v3
+url_list = https://nexus.srv.bonarea.com:11199/v2/dg/intradmin/app-intradmin-v3/tags/list
+build_dir = /mnt/c/Users/ramon.trepat/projects/bonarea/react/intraAdmin/app-intradmin-react
+nexus_url=http://nexus.srv.bonarea.com:8081/#browse/browse:docker-bonarea:v2%2Fdg%2Fintradmin%2Fapp-intradmin-v3%2Ftags
+ktl = lan-devel
+kns = itdg-adm-intra-devel
+name = intra-deployment
+deploy_dir = /undefind
+
+
+
