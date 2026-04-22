@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ -z "$BASH_VERSION" ]; then
+    echo "Error: Aquest script s'ha d'executar amb bash."
+    exit 1
+fi
+
 # Colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -17,7 +22,18 @@ source ~/publish/tag_manager.sh
 
 
 # Seleccionar repositori (amb suport per argument)
-select_repo "$1"
+NO_CACHE=""
+REPO_ARG=""
+
+for arg in "$@"; do
+    if [ "$arg" = "--no-cache" ]; then
+        NO_CACHE="--no-cache"
+    else
+        REPO_ARG="$arg"
+    fi
+done
+
+select_repo "$REPO_ARG"
 
 
 # Verificar que $BUILD_DIR està definit
@@ -52,7 +68,8 @@ TAGS=$(curl -s "$REPO_LIST" | jq -r '.tags[]')
 # Comprovar si la versió hi és
 if echo "$TAGS" | grep -q "^$VERSION$"; then
     echo -e "${NL}${RED}La versió $VERSION ja existeix al registre Nexus.${NC}"
-    read -p "Vols sobreescriure-la? (s/n): " OVERWRITE
+    printf "Vols sobreescriure-la? s/n: "
+    read OVERWRITE
     if [ "$OVERWRITE" != "s" ]; then
         echo -e "${NL}${RED}Publicació cancel·lada.${NC}"
         exit 1
@@ -70,12 +87,15 @@ if [ $? -ne 0 ]; then
 fi
 
 # Construcció de la imatge Docker
+if [ -n "$NO_CACHE" ]; then
+    echo -e "${NL}${BLUE}Mode sense memòria cau (no-cache) activat.${NC}"
+fi
 echo -e "${NL}${GREEN}Construint la imatge Docker amb la versió ${RED}$VERSION${GREEN}...${NC}"
 
 if [ -n "$DOKER_FILE" ]; then
-    docker build --platform linux/amd64 -f "$DOKER_FILE" -t "$REPO:$VERSION" .
+    docker build $NO_CACHE --network host --platform linux/amd64 -f "$DOKER_FILE" -t "$REPO:$VERSION" .
 else
-    docker build --platform linux/amd64 -t "$REPO:$VERSION" .
+    docker build $NO_CACHE --network host --platform linux/amd64 -t "$REPO:$VERSION" .
 fi
 if [ $? -ne 0 ]; then
     echo -e "${NL}${RED}Error construint la imatge Docker!${NC}"
@@ -91,7 +111,8 @@ if [ -n "$EXISTING_IMAGE" ]; then
 else
     echo -e "${NL}${GREEN}No hi ha cap versió anterior al Nexus.${NC}"
 fi
-read -p "Prem Enter per continuar..."
+printf "Prem Enter per continuar..."
+read UNUSED_VAR
 
 # Publicació
 echo -e "${NL}${GREEN}Pujant la imatge a Nexus...${NC}"
@@ -104,8 +125,9 @@ fi
 echo -e "${NL}${GREEN}Imatge pujada correctament!${NC}"
 
 # Desplegament
-read -p "Vols fer el desplegament? (s/n): " DEPLOY
-if [ "$DEPLOY" == "s" ]; then
+printf "Vols fer el desplegament? s/n: "
+read DEPLOY
+if [ "$DEPLOY" = "s" ]; then
     echo -e "${NL}${GREEN}Iniciant el desplegament: ${RED}$REPO_NAME${NC}"
     bash ~/publish/deploy.sh "$REPO_NAME"
     if [ $? -ne 0 ]; then
@@ -118,23 +140,35 @@ else
 fi
 
 # Etiqueta
-read -p "Vols publicar una etiqueta? (s/n): " TAG
-if [ "$TAG" == "s" ]; then
+printf "Vols publicar una etiqueta? s/n: "
+read TAG
+if [ "$TAG" = "s" ]; then
     manage_tag "$BUILD_DIR" "$VERSION"
 else
     echo -e "${NL}${GREEN}Publicació de l'etiqueta cancel·lada.${NC}"
 fi
 
 # Actualització repository deploy
-read -p "Vols actualitzar el repositori deploy? (s/n): " DEPLOY
-if [ "$DEPLOY" == "s" ]; then
-    echo -e "${NL}${GREEN}Iniciant actualització: ${RED}$REPO_NAME${NC}"
-    bash ~/publish/deploy_repo_change.sh "$REPO_NAME" "$VERSION"
-    if [ $? -ne 0 ]; then
-        echo -e "${NL}${RED}Error en el desplegament!${NC}"
-        exit 1
+if [ "$DEPLOY_DIR" != "/undefined" ] && [ "$DEPLOY_DIR" != "/undefind" ]; then
+    printf "Vols actualitzar el repositori deploy? s/n: "
+    read DEPLOY_REPO
+    if [ "$DEPLOY_REPO" = "s" ]; then
+        echo -e "${NL}${GREEN}Iniciant actualització: ${RED}$REPO_NAME${NC}"
+        cd "$DEPLOY_DIR" || { echo -e "${NL}${RED}Error: No es pot accedir a $DEPLOY_DIR${NC}"; exit 1; }
+        if [ -f "./release.sh" ]; then
+            bash ./release.sh "$VERSION" "devel"
+        else
+            echo -e "${NL}${RED}Error: El fitxer release.sh no existeix a $DEPLOY_DIR${NC}"
+            exit 1
+        fi
+        if [ $? -ne 0 ]; then
+            echo -e "${NL}${RED}Error en el desplegament!${NC}"
+            exit 1
+        fi
+        echo -e "${NL}${GREEN}Actualització completat correctament!${NC}"
+    else
+        echo -e "${NL}${GREEN}Actualització cancel·lada.${NC}"
     fi
-    echo -e "${NL}${GREEN}Actualització completat correctament!${NC}"
 else
-    echo -e "${NL}${GREEN}ACtualització cancel·lada.${NC}"
+    echo -e "${NL}${BLUE}Actualització del repositori de deploy omesa (DEPLOY_DIR no definit).${NC}"
 fi

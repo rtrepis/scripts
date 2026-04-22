@@ -17,8 +17,8 @@ url_list = https://nexus.srv.bonarea.com:11199/v2/dg/intradmin/mestres-federatio
 build_dir = /mnt/c/Users/ramon.trepat/projects/bonarea/react/mestres/app-module-mestres
 nexus_url = http://nexus.srv.bonarea.com:8081/#browse/browse:docker-bonarea:v2%2Fdg%2Fintradmin%2Fmestres-federation%2Ftags
 ktl = lan-devel
-kns = itdg-adm-contactes-devel
-name = contactes-module-deployment
+kns = itdg-adm-mestres-devel
+name = mestres-module-deployment
 deploy_dir = /undefined
 
 [portal]
@@ -39,7 +39,7 @@ nexus_url=http://nexus.srv.bonarea.com:8081/#browse/browse:docker-bonarea:v2%2Fd
 ktl = lan-devel
 kns = itdg-traduccions-devel
 name = traduccions-module-deployment
-deploy_dir = /mnt/c/Users/ramon.trepat/projects/itdg/itdg-soft/traduccions/deploy/ui-module/devel
+deploy_dir = /mnt/c/Users/ramon.trepat/projects/itdg/itdg-soft/traduccions/deploy
 
 [itdg-core]
 url = nexus.srv.bonarea.com:11199/dg/intradmin/app-intraitdg
@@ -62,4 +62,22 @@ name = intra-deployment
 deploy_dir = /undefind
 
 
+[accionistes-adm]
+url = nexus.srv.bonarea.com:11199/dg/intradmin/accionistes-federation
+url_list = https://nexus.srv.bonarea.com:11199/v2/dg/intradmin/accionistes-federation/tags/list
+build_dir = /mnt/c/Users/ramon.trepat/projects/itdg/adm/accionistes/ui-module
+nexus_url = http://nexus.srv.bonarea.com:8081/#browse/browse:docker-bonarea:v2%2Fdg%2Fintradmin%2Faccionistes-federation%2Ftags
+ktl = lan-devel
+kns = itdg-adm-accionistes-project-devel
+name = accionistes-web-deployment
+deploy_dir = /mnt/c/Users/ramon.trepat/projects/itdg/adm/accionistes/deploy
 
+[publicacions]
+url = nexus.srv.bonarea.com:11199/dg/intradmin/publicacions-federation
+url_list = https://nexus.srv.bonarea.com:11199/v2/dg/intradmin/publicacions-federation/tags/list
+build_dir = /mnt/c/Users/ramon.trepat/projects/itdg/adm/publicacions/ui-module
+nexus_url = http://nexus.srv.bonarea.com:8081/#browse/browse:docker-bonarea:v2%2Fdg%2Fintradmin%2Fpublicacions-federation%2Ftags
+ktl = lan-devel
+kns = itdg-adm-publicacions-devel
+name = publicacions-web-deployment
+deploy_dir = /undefined
