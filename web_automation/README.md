@@ -1,17 +1,17 @@
-# accio_web.py
+# accio_web.js
 
-Fa login en una web, clica l'enllaç cap a una segona pàgina (encara que tardi a carregar)
-i hi prem un botó. Tot amb "tocs humans":
+Script de Node.js que fa login en una web, clica l'enllaç cap a una segona pàgina
+(encara que tardi a carregar) i hi prem un botó. Tot amb "tocs humans":
 
 - el ratolí es mou en corba fins a l'element i clica en un punt aleatori, no al centre exacte
 - s'escriu tecla a tecla, amb velocitat variable i alguna pausa més llarga
 - hi ha petites pauses entre passos
 - abans de prémer l'acció s'espera un temps aleatori entre 0 i 3 s (`jitter_max_s`)
 
-## Instal·lació
+## Instal·lació (Node 18 o superior)
 
-    pip install playwright
-    playwright install chromium
+    npm install
+    npx playwright install chromium
 
 ## Configuració
 
@@ -38,9 +38,9 @@ o el text del botó (p. ex. `button:has-text('Confirmar')`).
 
     export WEB_USER="el_meu_usuari"
     export WEB_PASS="la_meva_contrasenya"
-    ./accio_web.py                 # ocult
-    ./accio_web.py --visible       # veient el navegador (per provar)
-    ./accio_web.py --jitter 5      # fins a 5 s d'aleatorietat
+    node accio_web.js                 # ocult   (o: npm start)
+    node accio_web.js --visible       # veient el navegador (o: npm run provar)
+    node accio_web.js --jitter 5      # fins a 5 s d'aleatorietat
 
 Si hi ha un error es desa una captura `error_AAAAMMDD_HHMMSS.png`.
 El codi de sortida és 0 si ha anat bé i 1 si ha fallat (útil per a cron).
