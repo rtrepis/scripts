@@ -5,12 +5,13 @@
   "main": "accio_web.js",
   "scripts": {
     "start": "node accio_web.js",
-    "provar": "node accio_web.js --visible"
+    "provar": "node accio_web.js --visible",
+    "disparador": "node --env-file=disparador.env disparador.js"
   },
   "dependencies": {
     "playwright": "^1.49.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20.6"
   }
 }

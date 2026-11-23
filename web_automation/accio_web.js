@@ -123,11 +123,23 @@ async function executar(cfg, usuari, contrasenya, headless, jitterMax) {
   const sel = cfg.selectors;
   const timeoutPag2 = (cfg.timeout_pagina2_s ?? 90) * 1000;
 
+  // "navegador" a config.json: "msedge" (Microsoft Edge instal·lat a l'ordinador),
+  // "chrome" (Google Chrome instal·lat) o "chromium" (el que baixa Playwright).
+  // NAVEGADOR (variable d'entorn) té prioritat sobre la config.
+  const canal = process.env.NAVEGADOR || cfg.navegador || 'msedge';
+  log(`Navegador: ${canal}`);
   const navegador = await chromium.launch({
     headless,
-    // CHROMIUM_PATH opcional: per fer servir un Chrome/Chromium ja instal·lat
+    channel: canal === 'chromium' ? undefined : canal,
+    // CHROMIUM_PATH opcional: ruta a un executable concret
     executablePath: process.env.CHROMIUM_PATH || undefined,
+  }).catch((e) => {
+    log(`ERROR: no s'ha pogut obrir el navegador "${canal}". ` +
+      (canal === 'msedge' ? 'Està instal·lat Microsoft Edge en aquest ordinador? ' : '') +
+      `(${e.message.split('\n')[0]})`);
+    return null;
   });
+  if (!navegador) return 1;
   const context = await navegador.newContext({
     viewport: { width: 1366, height: 768 },
     locale: cfg.locale || 'ca-ES',

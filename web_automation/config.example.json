@@ -1,6 +1,6 @@
 {
   "login_url": "https://www.exemple.com/login",
-
+  "navegador": "msedge",
   "selectors": {
     "usuari": "#username",
     "contrasenya": "#password",
@@ -9,7 +9,6 @@
     "boto_accio": "button:has-text('Confirmar')",
     "confirmacio": ""
   },
-
   "jitter_max_s": 3,
   "timeout_pagina2_s": 90,
   "headless": true,
