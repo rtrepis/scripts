@@ -1,0 +1,4 @@
+config.json
+error_*.png
+node_modules/
+disparador.env

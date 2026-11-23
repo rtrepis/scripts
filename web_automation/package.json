@@ -1,0 +1,17 @@
+{
+  "name": "accio-web",
+  "version": "1.0.0",
+  "description": "Login + navegació + acció en una web amb tocs humans",
+  "main": "accio_web.js",
+  "scripts": {
+    "start": "node accio_web.js",
+    "provar": "node accio_web.js --visible",
+    "disparador": "node --env-file=disparador.env disparador.js"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0"
+  },
+  "engines": {
+    "node": ">=20.6"
+  }
+}
