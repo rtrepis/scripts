@@ -1,0 +1,18 @@
+{
+  "login_url": "https://www.exemple.com/login",
+
+  "selectors": {
+    "usuari": "#username",
+    "contrasenya": "#password",
+    "boto_login": "button[type=submit]",
+    "enllac_pagina2": "a:has-text('Reserves')",
+    "boto_accio": "button:has-text('Confirmar')",
+    "confirmacio": ""
+  },
+
+  "jitter_max_s": 3,
+  "timeout_pagina2_s": 90,
+  "headless": true,
+  "locale": "ca-ES",
+  "timezone": "Europe/Madrid"
+}
